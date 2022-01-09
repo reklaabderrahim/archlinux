@@ -1,0 +1,180 @@
+                        Install vanilla archlinux
+*] loadkeys
+    ~ loadkeys fr
+
+1] Check internet connection
+    ~ ip a
+    ~ wifi-menu
+
+2] synchronize the network time protocol
+    ~ timedatectl set-ntp true
+
+3] check the disks
+    ~ lsblk or fdisk -l
+
+4] partitionning the proper disk
+    ~ fdisk [disk path] ------------- ex. fdisk /dev/sda
+    ~ g ----------------------------- create gpt partition table for UEFI
+    ~ n ----------------------------- create partition
+    ~ t ----------------------------- change the partition type
+    ~ w ----------------------------- commit the changes
+
+5] Suggested size for partition
+    ~ At least 300 MiB for boot partition
+    ~ More than 512 MiB for swap partition
+    ~ Remainder of the device for the root partition
+
+6] Formating the disks
+    ~ mkfs.fat -F32 [EFI partirion] - ex. mkfs.fat -F32 /dev/sda1
+    ~ mkfs.ext4 [root partition] ---- ex. mkfs.ext4 /dev/sda3
+
+7] Swap partition / file
+    a) Partition
+        ~ mkswap [swap partition] --- ex. mkswap /dev/sda2
+    b) file
+        ~ the [13] step
+
+8] Mount the partition
+    ~ mount [root partition] /mnt -------- ex. mount /dev/sda3 /mnt
+    ~ mkdir -p /mnt/boot/EFI -------- create the directory to mount the boot partition
+    ~ mount [EFI partition] /mnt/boot/EFI
+    ~ if swap partition
+        ~ swapon [swap partition] --- ex. swapon /dev/sda2
+
+9] Install the base packages
+    ~ pacstrap /mnt base linux linux-firmware [vim or nano]
+
+10] Generate the file system table
+    ~ genfstab -U /mnt >> /mnt/etc/fstab
+
+11] verify the generation of file system tables
+    ~ cat /mnt/etc/fstab
+
+12] chroot
+    ~ arch-chroot /mnt
+
+13*] allocate swapfile if we didn't do it with the partition option
+    ~ fallocate -l 2GB /swapfile
+    ~ chmod 600 /swapfile
+    ~ mkswap /swapfile
+    ~ swapon /swapfile
+    ~ vim /etc/fstab -------------- add line (name path type dump check)
+        ~ /swapfile none swap defaults 0 0  
+
+14] Time zone
+    ~ ln -sf /usr/share/zoneinfo/[Region]/[City] /etc/localtime ------- REGION=Europe City=Paris
+
+15] hardware clock
+    ~ hwclock --systohc
+
+16] Localization
+    ~ vim /etc/locale.gen -------- uncomment [fr_FR.UTF-8]
+    ~ locale-gen
+    ~ vim /etc/locale.conf --------- add LANG=fr_FR.UTF-8
+    ~ vim /etc/vconsole.conf ------- add KEYMAP=fr
+
+17] Network configuration
+    ~ vim /etc/hostname ------------ add [hostname] ex. archvbox ---- or:
+        ~ hostnamectl set-hostname [hostname]
+        ~ hostnamectl
+    ~ vim /etc/hosts
+        127.0.0.1   localhost
+        ::1         localhost
+        127.0.1.1   archvbox.localdomain    archvbox
+
+18] Setup root passwd + users
+    ~ passwd
+    ~ useradd -m [rekla]
+    ~ passwd [rekla]
+    ~ usermod -aG wheel,audio,video,storage [rekla]
+
+19] Add sudo priveliges to users
+    ~ pacman -S sudo
+    ~ EDITOR=vim visudo ------------ uncomment %wheel all line
+
+20] Install grub bootloader and some utilities
+    ~ pacman -S grub efibootmgr networkmanager network-manager-applet wireless_tools 
+      wpa_supplicant dialog os-prober mtools dosfstools base-devel linux-headers
+    ~ grub-install --target=x86_64-efi --efi-directory=[efi partition ex. /boot/EFI] --bootloader-id=GRUB
+    ~ grub-mkconfig -o /boot/grub/grub.cfg
+
+21] Enable network manager
+    ~ systemctl enable NetworkManager
+
+22] Exit from chroot
+    ~ exit
+
+23] Umount partition
+    ~ umount -a
+
+24] Shutdown VM, Unplug the ISO and re launch
+
+25] Check internet connection
+    ~ ip a
+    ~ nmtui and activate wifi --------------------------- for the wifi
+    ~ ping google.com
+
+26] Install graphical packages
+    ~ pacman -S xf86-video-qxl -------------------------- for virtualbox
+    ~ pacman -S nvidia nvidia-utils -------------------------- for nvidia
+    ~ pacman -S [intel] -------------------------- for intel
+
+27] Install xorg
+    ~ pacman -S xorg [xorg-server ?]
+
+28] Install display manager
+    ~ pacman -S lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
+
+29] Install window manager [cinnamon]
+    ~ pacman -S cinnamon system-config-printer gnome-keyring blueberry cups gnome-terminal
+
+30] Enable display manager
+    ~ systemctl enable lightdm.service
+
+31] Enable printer driver
+    ~ system enable org.cups.cupsd.service
+
+32] Activate bluetooth
+    ~ systemctl enable bluetooth
+
+33] Reboot the system
+
+
+
+EXTRA]
+setxkbmap -layout fr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
+
